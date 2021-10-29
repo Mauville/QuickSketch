@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sketch</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: cornsilk;
+        }
+
+        #board {
+            width: 400px;
+            height: 600px;
+            border-radius: 10px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"
+            integrity="sha512-zN6KYOtONNTOGXz0RkWX2EpavN9VdIs+2w+To+fhciFv83YA9maUpi2lzZWrOfKXdFIZZomWufBznkyHi3a8oQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/drawingboard.js/0.4.2/drawingboard.min.js"
+            integrity="sha512-nX6X5qhGv+uYu9+oBbsySdI+KKzNL8vlCge8/SJ+wbcvnrxk3Su4OuUM6uwY/tRAZASaApnJmhouHMU5oFGzHg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/drawingboard.js/0.4.2/drawingboard.css"
+          integrity="sha512-WL5/mlbwJkcM2NzoUhe6Lqkb22wlfsK/Wo2u1bbVTYQY7353XJ2XEXJFYihWA6vAB8kC/xySqPvwOYMFCw3DZw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+</head>
+<body>
+<h3><span id="player_name">Mike</span> is drawing...</h3>
+<div id="board"></div>
+
+<script>
+    let socket = io();
+    let drawingBoard = new DrawingBoard.Board('board');
+    // Handle receiving drawing
+    socket.on('updateCanvas', (img) => {
+        console.log("Changes received:")
+        drawingBoard.setImg(img)
+    });
+    ;
+    let notifyDraw = () => {
+        console.log("Changes registered")
+        let canvas = drawingBoard.getImg();
+        socket.emit("drawingUpdate", canvas)
+        console.log("Server notified")
+    }
+    drawingBoard.ev.bind("board:stopDrawing", notifyDraw)
+    drawingBoard.ev.bind("board:reset", notifyDraw)
+    drawingBoard.ev.bind("board:imageDropped", notifyDraw)
+</script>
+</body>
+</html>
