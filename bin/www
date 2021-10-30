@@ -94,14 +94,18 @@ function onListening() {
 // Start sockets
 io.on('connection', (socket) => {
     console.log('a user connected');
-    
+
+    socket.on('addPlayer', (name) => {
+        console.log("Added player " + name)
+        io.emit("addPlayer", name)
+    })
+
     socket.on('disconnect', () => {
         console.log("user disconnect");
     })
     socket.on('drawingUpdate', (canvas) => {
         console.log("Received canvas");
         io.emit("updateCanvas", canvas)
-        console.log("Broadcasted canvas");
     })
     socket.on('wordChange', () => {
         console.log("WordChanged");

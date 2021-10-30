@@ -2,18 +2,6 @@
 <html>
 <head>
     <title>Sketch</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: cornsilk;
-        }
-
-        #board {
-            width: 400px;
-            height: 600px;
-            border-radius: 10px;
-        }
-    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"
             integrity="sha512-zN6KYOtONNTOGXz0RkWX2EpavN9VdIs+2w+To+fhciFv83YA9maUpi2lzZWrOfKXdFIZZomWufBznkyHi3a8oQ=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -22,13 +10,49 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/drawingboard.js/0.4.2/drawingboard.min.js"
             integrity="sha512-nX6X5qhGv+uYu9+oBbsySdI+KKzNL8vlCge8/SJ+wbcvnrxk3Su4OuUM6uwY/tRAZASaApnJmhouHMU5oFGzHg=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+            integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/drawingboard.js/0.4.2/drawingboard.css"
           integrity="sha512-WL5/mlbwJkcM2NzoUhe6Lqkb22wlfsK/Wo2u1bbVTYQY7353XJ2XEXJFYihWA6vAB8kC/xySqPvwOYMFCw3DZw=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: cornsilk;
+        }
+
+        #board {
+            width: 80vw;
+            height: 90vh;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 <body>
-<h3><span id="player_name">Mike</span> is drawing...</h3>
+<h3>Sketchboard::<span id="player_name"></span></h3>
+<br>
+<div id="nameform">
+    <label>Input your name</label>
+    <label>
+        <input type="text" id="name">
+    </label>
+    <button id="sendButton">Send!</button>
+    <br>
+    <br>
+</div>
+
 <div id="board"></div>
+
+<div style="position: absolute; right: 5em; top: 30vh">
+
+    <h5>Participants:</h5>
+    <ul id="playerlist">
+</div>
+
+</ul>
 
 <script>
     let socket = io();
@@ -38,13 +62,40 @@
         console.log("Changes received:")
         drawingBoard.setImg(img)
     });
-    ;
+
+    socket.on('addPlayer', (name) => {
+        console.log("Adding New user")
+        $("#playerlist").append(`<li>` + name + `</li>`)
+    });
+
+
+    // Handle new input
     let notifyDraw = () => {
         console.log("Changes registered")
         let canvas = drawingBoard.getImg();
         socket.emit("drawingUpdate", canvas)
         console.log("Server notified")
     }
+
+    // Handle new player
+    let notifyPlayer = () => {
+        console.log("Changes registered")
+        let canvas = drawingBoard.getImg();
+        socket.emit("drawingUpdate", canvas)
+        console.log("Server notified")
+    }
+
+    // Add new playwer
+    $("#sendButton").click(() => {
+            let name = $("#name").val();
+            $("#nameform").toggle();
+            console.log(name)
+            socket.emit("addPlayer", name)
+            $("#title").toggle()
+            $("#player_name").text(name)
+        }
+    );
+
     drawingBoard.ev.bind("board:stopDrawing", notifyDraw)
     drawingBoard.ev.bind("board:reset", notifyDraw)
     drawingBoard.ev.bind("board:imageDropped", notifyDraw)
